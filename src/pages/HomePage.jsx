@@ -1,6 +1,15 @@
 import { motion } from 'framer-motion'
-import { BadgePercent, Headphones, ShieldCheck, Truck } from 'lucide-react'
-import { categories, products } from '../data'
+import {
+  BadgePercent,
+  Headphones,
+  ShieldCheck,
+  Truck,
+} from 'lucide-react'
+
+import { categories } from '../data'
+import { useEffect, useState } from 'react'
+import api from '../api/client'
+
 import PageTransition from '../components/PageTransition'
 import ProductCard from '../components/ProductCard'
 import { Link } from 'react-router-dom'
@@ -10,12 +19,38 @@ const perks = [
   [Truck, 'Fast Delivery', 'In 24–48 hours'],
   [BadgePercent, 'Best Prices', 'Unbeatable deals'],
   [ShieldCheck, 'Quality Products', '100% guaranteed'],
-  [Headphones, 'Secure Shopping', 'Safe Checkout'],
+  [Headphones, 'Secure Shopping', 'Safe checkout'],
 ]
 
 export default function HomePage() {
+
+  const [featuredProducts, setFeaturedProducts] = useState([])
+
+  useEffect(() => {
+
+    const fetchProducts = async () => {
+
+      try {
+
+        const response = await api.get('/products')
+
+        setFeaturedProducts(response.data.content || [])
+
+      } catch (error) {
+
+        console.error('Failed to fetch products', error)
+
+      }
+
+    }
+
+    fetchProducts()
+
+  }, [])
+
   return (
     <PageTransition>
+
       <div className="container-shell space-y-8">
 
         <section className="grid gap-5 lg:grid-cols-[220px_1fr]">
@@ -29,6 +64,7 @@ export default function HomePage() {
             <div className="space-y-3">
 
               {categories.map((category) => (
+
                 <Link
                   key={category}
                   to={`/products?category=${encodeURIComponent(category)}`}
@@ -36,6 +72,7 @@ export default function HomePage() {
                 >
                   {category}
                 </Link>
+
               ))}
 
             </div>
@@ -98,6 +135,7 @@ export default function HomePage() {
                   </span>
 
                   <div>
+
                     <div className="text-sm font-semibold">
                       {title}
                     </div>
@@ -105,6 +143,7 @@ export default function HomePage() {
                     <div className="text-xs text-zinc-500">
                       {text}
                     </div>
+
                   </div>
 
                 </div>
@@ -163,11 +202,13 @@ export default function HomePage() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-            {products.slice(0, 4).map((product) => (
+            {featuredProducts.slice(0, 4).map((product) => (
+
               <ProductCard
                 key={product.id}
                 product={product}
               />
+
             ))}
 
           </div>
@@ -203,6 +244,7 @@ export default function HomePage() {
         </section>
 
       </div>
+
     </PageTransition>
   )
 }
