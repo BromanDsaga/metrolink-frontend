@@ -1,8 +1,7 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
-  timeout: 8000,
+export default axios.create({
+  baseURL: 'https://metrolink-backend-production.up.railway.app'
 })
 
 api.interceptors.request.use(config => {
