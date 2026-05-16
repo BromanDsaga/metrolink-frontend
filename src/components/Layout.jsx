@@ -26,46 +26,72 @@ export default function Layout({ children }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('user')
-    if (stored) setUser(JSON.parse(stored))
+
+    if (stored) {
+      setUser(JSON.parse(stored))
+    }
   }, [])
 
   useEffect(() => {
     const onScroll = () => {
       const current = window.scrollY
+
       setVisible(current < 80 || current < lastY)
+
       setLastY(current)
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    window.addEventListener('scroll', onScroll, {
+      passive: true,
+    })
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+    }
   }, [lastY])
 
   const displayName = useMemo(() => {
-    if (user?.fullName?.trim()) return user.fullName.trim().split(' ')[0]
-    if (user?.email) return user.email.split('@')[0]
+    if (user?.fullName?.trim()) {
+      return user.fullName.trim().split(' ')[0]
+    }
+
+    if (user?.email) {
+      return user.email.split('@')[0]
+    }
+
     return 'Account'
   }, [user])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+
     setUser(null)
+
     navigate('/')
   }
 
   const handleSearch = () => {
-    if (!search.trim()) return
+    if (search.trim()) {
+      navigate(
+        `/products?query=${encodeURIComponent(
+          search.trim()
+        )}`
+      )
 
-    navigate(`/products?query=${encodeURIComponent(search.trim())}`)
-    setSearch('')
-    setMobileOpen(false)
+      setSearch('')
+      setMobileOpen(false)
+    }
   }
 
   return (
     <>
       <motion.header
         animate={{ y: visible ? 0 : -120 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
+        transition={{
+          duration: 0.25,
+          ease: 'easeOut',
+        }}
         className="fixed inset-x-0 top-0 z-50"
       >
         <div className="bg-red-700 py-2 text-center text-xs font-medium text-white">
@@ -74,7 +100,10 @@ export default function Layout({ children }) {
 
         <div className="border-b border-zinc-200 bg-white/95 backdrop-blur">
           <div className="container-shell flex h-20 items-center gap-4">
-            <Link to="/" className="flex shrink-0 items-center gap-3">
+            <Link
+              to="/"
+              className="flex shrink-0 items-center gap-3"
+            >
               <span className="grid h-10 w-10 place-items-center rounded-full bg-red-600 text-lg font-bold text-white">
                 M
               </span>
@@ -83,6 +112,7 @@ export default function Layout({ children }) {
                 <span className="block text-lg font-bold leading-none">
                   Metrolink
                 </span>
+
                 <span className="text-xs text-zinc-500">
                   Everyday Essentials
                 </span>
@@ -96,7 +126,9 @@ export default function Layout({ children }) {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSearch()
+                  if (e.key === 'Enter') {
+                    handleSearch()
+                  }
                 }}
               />
 
@@ -113,7 +145,9 @@ export default function Layout({ children }) {
                 ['Categories', '/products'],
                 ['Favorites', '/favorites'],
                 ['Deals', '/products'],
-                ...(user?.role === 'ADMIN' ? [['Admin', '/admin']] : []),
+                ...(user?.role === 'ADMIN'
+                  ? [['Admin', '/admin']]
+                  : []),
               ].map(([label, href]) => (
                 <NavLink
                   key={label}
@@ -197,9 +231,13 @@ export default function Layout({ children }) {
               className="fixed right-0 top-0 z-50 flex h-full w-72 flex-col bg-white p-6 shadow-2xl"
             >
               <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-lg font-bold">Menu</h2>
+                <h2 className="text-lg font-bold">
+                  Menu
+                </h2>
 
-                <button onClick={() => setMobileOpen(false)}>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                >
                   <X size={22} />
                 </button>
               </div>
@@ -210,12 +248,12 @@ export default function Layout({ children }) {
                   placeholder="Search..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSearch()
-                  }}
                 />
 
-                <button onClick={handleSearch} className="text-sm text-red-600">
+                <button
+                  onClick={handleSearch}
+                  className="text-sm text-red-600"
+                >
                   Go
                 </button>
               </div>
@@ -243,9 +281,11 @@ export default function Layout({ children }) {
         )}
       </AnimatePresence>
 
-      <main className="min-h-screen pb-10 pt-32">{children}</main>
+      <main className="min-h-screen pb-32 pt-32 sm:pb-10">
+        {children}
+      </main>
 
-      <nav className="fixed inset-x-4 bottom-4 z-40 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white/95 p-2 shadow-[0_15px_40px_rgba(24,24,27,0.14)] backdrop-blur sm:hidden">
+      <nav className="fixed inset-x-3 bottom-2 z-40 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white/95 p-1.5 shadow-[0_15px_40px_rgba(24,24,27,0.14)] backdrop-blur sm:hidden">
         {[
           [Home, 'Home', '/'],
           [Grid2X2, 'Shop', '/products'],
