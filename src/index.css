@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #18181b;
+  background: #fafafa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(220, 38, 38, 0.06), transparent 28rem),
+    linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.container-shell {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.surface {
+  @apply rounded-2xl border border-zinc-200 bg-white shadow-[0_10px_35px_rgba(24,24,27,0.06)];
+}
+
+.soft-ring {
+  @apply ring-1 ring-black/5;
+}
+
+.section-title {
+  @apply text-xl font-bold tracking-tight text-zinc-950;
+}
+
+.muted {
+  @apply text-sm text-zinc-500;
+}
