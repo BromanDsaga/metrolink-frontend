@@ -10,7 +10,7 @@ const perks = [
   [Truck, 'Fast Delivery', 'In 24–48 hours'],
   [BadgePercent, 'Best Prices', 'Unbeatable deals'],
   [ShieldCheck, 'Quality Products', '100% guaranteed'],
-  [Headphones, 'Easy Returns', 'Hassle free'],
+  [Headphones, 'Secure Shopping', 'Safe Checkout'],
 ]
 
 export default function HomePage() {
