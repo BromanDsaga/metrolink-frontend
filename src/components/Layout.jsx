@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Grid2X2,
   Home,
@@ -6,6 +6,7 @@ import {
   Menu,
   ShoppingCart,
   UserRound,
+  X,
 } from 'lucide-react'
 
 import {
@@ -28,12 +29,12 @@ export default function Layout({ children }) {
   const [lastY, setLastY] = useState(0)
   const [user, setUser] = useState(null)
   const [search, setSearch] = useState('')
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   const count = useCartStore((state) => state.count())
 
   const navigate = useNavigate()
 
-  // Load user
   useEffect(() => {
 
     const stored = localStorage.getItem('user')
@@ -44,7 +45,6 @@ export default function Layout({ children }) {
 
   }, [])
 
-  // Header hide/show on scroll
   useEffect(() => {
 
     const onScroll = () => {
@@ -67,7 +67,6 @@ export default function Layout({ children }) {
 
   }, [lastY])
 
-  // Clean display name
   const displayName = useMemo(() => {
 
     if (user?.fullName?.trim()) {
@@ -82,7 +81,6 @@ export default function Layout({ children }) {
 
   }, [user])
 
-  // Logout
   const handleLogout = () => {
 
     localStorage.removeItem('token')
@@ -91,6 +89,24 @@ export default function Layout({ children }) {
     setUser(null)
 
     navigate('/')
+
+  }
+
+  const handleSearch = () => {
+
+    if (search.trim()) {
+
+      navigate(
+        `/products?query=${encodeURIComponent(
+          search.trim()
+        )}`
+      )
+
+      setSearch('')
+
+      setMobileOpen(false)
+
+    }
 
   }
 
@@ -106,17 +122,14 @@ export default function Layout({ children }) {
         className="fixed inset-x-0 top-0 z-50"
       >
 
-        {/* Top Banner */}
         <div className="bg-red-700 py-2 text-center text-xs font-medium text-white">
           FREE delivery on orders over ₦20,000
         </div>
 
-        {/* Main Navbar */}
         <div className="border-b border-zinc-200 bg-white/95 backdrop-blur">
 
           <div className="container-shell flex h-20 items-center gap-4">
 
-            {/* Logo */}
             <Link
               to="/"
               className="flex shrink-0 items-center gap-3"
@@ -140,7 +153,6 @@ export default function Layout({ children }) {
 
             </Link>
 
-            {/* Search */}
             <div className="hidden flex-1 items-center rounded-full border border-zinc-200 bg-zinc-50 px-4 md:flex">
 
               <input
@@ -149,38 +161,14 @@ export default function Layout({ children }) {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => {
-
-                  if (e.key === 'Enter' && search.trim()) {
-
-                    navigate(
-                      `/products?query=${encodeURIComponent(
-                        search.trim()
-                      )}`
-                    )
-
-                    setSearch('')
-
+                  if (e.key === 'Enter') {
+                    handleSearch()
                   }
-
                 }}
               />
 
               <button
-                onClick={() => {
-
-                  if (search.trim()) {
-
-                    navigate(
-                      `/products?query=${encodeURIComponent(
-                        search.trim()
-                      )}`
-                    )
-
-                    setSearch('')
-
-                  }
-
-                }}
+                onClick={handleSearch}
                 className="border-l border-zinc-200 pl-4 text-sm text-zinc-500 transition hover:text-red-600"
               >
                 Search
@@ -188,7 +176,6 @@ export default function Layout({ children }) {
 
             </div>
 
-            {/* Desktop Navigation */}
             <nav className="ml-auto hidden items-center gap-6 text-sm lg:flex">
 
               {[
@@ -215,10 +202,8 @@ export default function Layout({ children }) {
 
             </nav>
 
-            {/* Right Side */}
             <div className="ml-auto flex items-center gap-2 lg:ml-2">
 
-              {/* Cart */}
               <Link
                 to="/cart"
                 className="relative grid h-11 w-11 place-items-center rounded-full border border-zinc-200 text-zinc-700 hover:border-red-200 hover:text-red-600"
@@ -236,7 +221,6 @@ export default function Layout({ children }) {
 
               </Link>
 
-              {/* Logged In */}
               {user ? (
 
                 <div className="hidden items-center gap-2 sm:flex">
@@ -273,8 +257,10 @@ export default function Layout({ children }) {
 
               )}
 
-              {/* Mobile Menu */}
-              <button className="grid h-11 w-11 place-items-center rounded-full border border-zinc-200 lg:hidden">
+              <button
+                onClick={() => setMobileOpen(true)}
+                className="grid h-11 w-11 place-items-center rounded-full border border-zinc-200 lg:hidden"
+              >
 
                 <Menu size={18} />
 
@@ -288,12 +274,92 @@ export default function Layout({ children }) {
 
       </motion.header>
 
-      {/* Page Content */}
+      <AnimatePresence>
+
+        {mobileOpen && (
+
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 z-40 bg-black/40"
+            />
+
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.25 }}
+              className="fixed right-0 top-0 z-50 flex h-full w-72 flex-col bg-white p-6 shadow-2xl"
+            >
+
+              <div className="mb-8 flex items-center justify-between">
+
+                <h2 className="text-lg font-bold">
+                  Menu
+                </h2>
+
+                <button
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <X size={22} />
+                </button>
+
+              </div>
+
+              <div className="mb-6 flex items-center rounded-xl border border-zinc-200 px-3">
+
+                <input
+                  className="h-11 flex-1 bg-transparent text-sm outline-none"
+                  placeholder="Search..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+
+                <button
+                  onClick={handleSearch}
+                  className="text-sm text-red-600"
+                >
+                  Go
+                </button>
+
+              </div>
+
+              <div className="flex flex-col gap-3">
+
+                {[
+                  ['Home', '/'],
+                  ['Products', '/products'],
+                  ['Cart', '/cart'],
+                  ['Account', '/auth'],
+                ].map(([label, href]) => (
+
+                  <NavLink
+                    key={label}
+                    to={href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600"
+                  >
+                    {label}
+                  </NavLink>
+
+                ))}
+
+              </div>
+
+            </motion.div>
+          </>
+
+        )}
+
+      </AnimatePresence>
+
       <main className="min-h-screen pb-10 pt-32">
         {children}
       </main>
 
-      {/* Mobile Bottom Navigation */}
       <nav className="fixed inset-x-4 bottom-4 z-40 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white/95 p-2 shadow-[0_15px_40px_rgba(24,24,27,0.14)] backdrop-blur sm:hidden">
 
         {[
