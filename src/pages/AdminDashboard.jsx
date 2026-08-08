@@ -50,9 +50,14 @@ export default function AdminDashboard() {
             </Link>
             <Link
               to="/admin/orders"
-              className="rounded-full border border-zinc-200 px-5 py-2 text-sm font-semibold text-zinc-700 hover:border-red-200 hover:text-red-600 transition"
+              className="relative rounded-full border border-zinc-200 px-5 py-2 text-sm font-semibold text-zinc-700 hover:border-red-200 hover:text-red-600 transition"
             >
               View Orders
+              {!loading && pendingOrders > 0 && (
+                <span className="absolute -right-2 -top-2 grid h-5 min-w-5 place-items-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                  {pendingOrders}
+                </span>
+              )}
             </Link>
           </div>
         </div>
