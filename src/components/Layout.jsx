@@ -13,24 +13,18 @@ import {
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { useCartStore } from '../store/cartStore'
+import { useAuthStore } from '../store/authStore'
 
 export default function Layout({ children }) {
   const [visible, setVisible] = useState(true)
   const [lastY, setLastY] = useState(0)
-  const [user, setUser] = useState(null)
   const [search, setSearch] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const count = useCartStore((state) => state.count())
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const stored = localStorage.getItem('user')
-
-    if (stored) {
-      setUser(JSON.parse(stored))
-    }
-  }, [])
 
   useEffect(() => {
     const onScroll = () => {
@@ -63,10 +57,7 @@ export default function Layout({ children }) {
   }, [user])
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-
-    setUser(null)
+    logout()
 
     navigate('/')
   }

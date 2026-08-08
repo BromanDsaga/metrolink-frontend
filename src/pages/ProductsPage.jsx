@@ -12,6 +12,7 @@ export default function ProductsPage() {
   const [query, setQuery] = useState(searchParams.get('query') || '')
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
 
   const [loading, setLoading] = useState(true)
@@ -20,38 +21,71 @@ export default function ProductsPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
 
-  // Fetch categories
+  // Fetch categories once on mount, resolving the initial ?category= URL
+  // param in the SAME update as categoriesLoaded so the very first products
+  // fetch below already has the right categoryId (no unfiltered flash).
   useEffect(() => {
+
+    const categoryFromUrl = searchParams.get('category')
 
     api
       .get('/categories')
       .then((res) => {
 
+        const matchedCategory = categoryFromUrl
+          ? res.data.find(
+              (cat) => cat.name.toLowerCase() === categoryFromUrl.toLowerCase()
+            )
+          : null
+
         setCategories(res.data)
-
-        // Read category from URL
-        const categoryFromUrl = searchParams.get('category')
-
-        if (categoryFromUrl) {
-
-          const matchedCategory = res.data.find(
-            (cat) =>
-              cat.name.toLowerCase() === categoryFromUrl.toLowerCase()
-          )
-
-          if (matchedCategory) {
-            setActiveCategory(matchedCategory.id)
-          }
-
-        }
+        setActiveCategory(matchedCategory ? matchedCategory.id : null)
 
       })
       .catch(() => {})
+      .finally(() => {
+        setCategoriesLoaded(true)
+      })
 
-  }, [searchParams])
+    // Only runs once on mount — later ?category= changes are handled below
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // Fetch products
+  // Re-resolve the category if the URL's ?category= param changes later
+  // (e.g. clicking a different category link without the page remounting)
   useEffect(() => {
+
+    if (!categoriesLoaded) {
+      return
+    }
+
+    const categoryFromUrl = searchParams.get('category')
+
+    if (!categoryFromUrl) {
+      setActiveCategory(null)
+      return
+    }
+
+    const matchedCategory = categories.find(
+      (cat) => cat.name.toLowerCase() === categoryFromUrl.toLowerCase()
+    )
+
+    setActiveCategory(matchedCategory ? matchedCategory.id : null)
+
+  }, [searchParams, categories, categoriesLoaded])
+
+  // Fetch products whenever the resolved category, query, or page changes
+  useEffect(() => {
+
+    // If the URL points at a category, wait until it's resolved to a
+    // categoryId before fetching, so we never fetch the unfiltered list first.
+    const categoryFromUrl = searchParams.get('category')
+
+    if (categoryFromUrl && !categoriesLoaded) {
+      return
+    }
+
+    let ignore = false
 
     setLoading(true)
 
@@ -72,19 +106,31 @@ export default function ProductsPage() {
       .get('/products', { params })
       .then((res) => {
 
+        if (ignore) {
+          return
+        }
+
         setProducts(res.data.content || [])
         setTotalPages(res.data.totalPages || 0)
         setTotalElements(res.data.totalElements || 0)
 
       })
       .catch(() => {
-        setProducts([])
+        if (!ignore) {
+          setProducts([])
+        }
       })
       .finally(() => {
-        setLoading(false)
+        if (!ignore) {
+          setLoading(false)
+        }
       })
 
-  }, [query, activeCategory, page])
+    return () => {
+      ignore = true
+    }
+
+  }, [query, activeCategory, page, categoriesLoaded, searchParams])
 
   // Sync search query from URL
   useEffect(() => {

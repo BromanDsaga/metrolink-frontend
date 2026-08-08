@@ -48,7 +48,7 @@ export default function CheckoutPage() {
     const token = localStorage.getItem('token')
 
     if (!token) {
-      navigate('/auth')
+      navigate('/auth', { state: { from: '/checkout' } })
       return
     }
 
@@ -58,7 +58,7 @@ export default function CheckoutPage() {
     try {
       const orderItems = items.map((item) => ({
         productId: item.id,
-        quantity: item.qty,
+        quantity: item.quantity,
       }))
 
       await api.post('/orders', orderItems)
@@ -170,10 +170,10 @@ export default function CheckoutPage() {
             {items.map((item) => (
               <div key={item.id} className="flex justify-between gap-4 text-sm">
                 <span>
-                  {item.name} × {item.qty}
+                  {item.name} × {item.quantity}
                 </span>
 
-                <span>{money(item.price * item.qty)}</span>
+                <span>{money(item.price * item.quantity)}</span>
               </div>
             ))}
           </div>

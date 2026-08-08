@@ -1,6 +1,7 @@
 import { AnimatePresence } from 'framer-motion'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminProductsPage from './pages/AdminProductsPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
@@ -25,7 +26,14 @@ export default function App() {
           <Route path="/products/:slug" element={<ProductDetailPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/products" element={<AdminProductsPage />} />

@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import PageTransition from '../components/PageTransition'
 import api from '../api/client'
+import { useAuthStore } from '../store/authStore'
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login')
@@ -18,6 +19,8 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false)
 
   const navigate = useNavigate()
+  const location = useLocation()
+  const redirectTo = location.state?.from || '/'
 
   const handleChange = (field) => (e) => {
     setForm((prev) => ({
@@ -92,17 +95,14 @@ export default function AuthPage() {
       const { data } = await api.post(endpoint, payload)
 
       localStorage.setItem('token', data.token)
-      localStorage.setItem(
-        'user',
-        JSON.stringify({
-          email: data.email,
-          role: data.role,
-          fullName: data.fullName || form.fullName,
-          phone: data.phone || form.phone,
-        })
-      )
+      useAuthStore.getState().setUser({
+        email: data.email,
+        role: data.role,
+        fullName: data.fullName || form.fullName,
+        phone: data.phone || form.phone,
+      })
 
-      navigate('/')
+      navigate(redirectTo)
     } catch (err) {
       const backendMessage =
         err?.response?.data?.message ||
