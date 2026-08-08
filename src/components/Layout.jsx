@@ -136,6 +136,7 @@ export default function Layout({ children }) {
                 ['Categories', '/products'],
                 ['Favorites', '/favorites'],
                 ['Deals', '/products'],
+                ...(user ? [['My Orders', '/my-orders']] : []),
                 ...(user?.role === 'ADMIN'
                   ? [['Admin', '/admin']]
                   : []),
@@ -255,6 +256,7 @@ export default function Layout({ children }) {
                   ['Products', '/products'],
                   ['Favorites', '/favorites'],
                   ['Cart', '/cart'],
+                  ...(user ? [['My Orders', '/my-orders']] : []),
                   ['Account', '/auth'],
                 ].map(([label, href]) => (
                   <NavLink

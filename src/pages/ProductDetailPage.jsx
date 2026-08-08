@@ -1,18 +1,104 @@
 import { Minus, Plus, RotateCcw, ShieldCheck, Truck } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import PageTransition from '../components/PageTransition'
 import ProductArt from '../components/ProductArt'
 import ProductCard from '../components/ProductCard'
-import { money, products } from '../data'
+import { money } from '../data'
 import { useCartStore } from '../store/cartStore'
+import api from '../api/client'
 
 export default function ProductDetailPage() {
-  const { slug } = useParams()
-  const product = products.find((item) => item.slug === slug) ?? products[1]
+  const { id } = useParams()
+
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [recommended, setRecommended] = useState([])
   const [quantity, setQuantity] = useState(1)
+
   const addItem = useCartStore((state) => state.addItem)
-  const recommended = useMemo(() => products.filter((item) => item.id !== product.id).slice(0, 4), [product.id])
+
+  useEffect(() => {
+    let ignore = false
+
+    setLoading(true)
+    setQuantity(1)
+
+    api
+      .get(`/products/${id}`)
+      .then((res) => {
+        if (ignore) return
+        setProduct(res.data)
+      })
+      .catch(() => {
+        if (!ignore) setProduct(null)
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [id])
+
+  useEffect(() => {
+    const categoryId = product?.category?.id
+
+    if (!categoryId) {
+      setRecommended([])
+      return
+    }
+
+    let ignore = false
+
+    api
+      .get('/products', { params: { categoryId, size: 5 } })
+      .then((res) => {
+        if (ignore) return
+        const items = (res.data.content || []).filter((item) => item.id !== product.id)
+        setRecommended(items.slice(0, 4))
+      })
+      .catch(() => {
+        if (!ignore) setRecommended([])
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [product?.id, product?.category?.id])
+
+  if (loading) {
+    return (
+      <PageTransition>
+        <div className="container-shell">
+          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="surface h-80 animate-pulse" />
+            <div className="surface animate-pulse p-6">
+              <div className="h-4 w-1/3 rounded bg-zinc-100" />
+              <div className="mt-4 h-8 w-2/3 rounded bg-zinc-100" />
+              <div className="mt-6 h-6 w-1/4 rounded bg-zinc-100" />
+            </div>
+          </div>
+        </div>
+      </PageTransition>
+    )
+  }
+
+  if (!product) {
+    return (
+      <PageTransition>
+        <div className="container-shell">
+          <div className="surface p-10 text-center">
+            <p className="text-lg font-semibold">Product not found</p>
+            <p className="mt-2 text-sm text-zinc-500">
+              This product may have been removed or the link is invalid.
+            </p>
+          </div>
+        </div>
+      </PageTransition>
+    )
+  }
 
   return (
     <PageTransition>
@@ -22,10 +108,19 @@ export default function ProductDetailPage() {
           <div className="surface p-6">
             <p className="text-sm text-zinc-500">&larr; Back to products</p>
             <h1 className="mt-4 text-3xl font-black tracking-tight">{product.name}</h1>
-            <p className="mt-2 text-sm text-zinc-500">{product.category} / {product.size}</p>
+            <p className="mt-2 text-sm text-zinc-500">{product.category?.name}</p>
             <div className="mt-5 text-3xl font-black text-red-600">{money(product.price)}</div>
-            <p className="mt-5 max-w-xl text-sm leading-6 text-zinc-600">Freshly stocked and ready for quick delivery. A dependable everyday choice with simple pricing and consistent quality.</p>
-            <p className="mt-4 text-sm font-semibold text-green-600">In Stock</p>
+            <p className="mt-5 max-w-xl text-sm leading-6 text-zinc-600">
+              {product.description ||
+                'Freshly stocked and ready for quick delivery. A dependable everyday choice with simple pricing and consistent quality.'}
+            </p>
+            <p
+              className={`mt-4 text-sm font-semibold ${
+                product.stock > 0 ? 'text-green-600' : 'text-red-600'
+              }`}
+            >
+              {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+            </p>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <div className="flex items-center rounded-full border border-zinc-200">
@@ -33,7 +128,13 @@ export default function ProductDetailPage() {
                 <span className="w-10 text-center font-semibold">{quantity}</span>
                 <button onClick={() => setQuantity((q) => q + 1)} className="grid h-11 w-11 place-items-center"><Plus size={16} /></button>
               </div>
-              <button onClick={() => addItem(product, quantity)} className="h-11 rounded-full bg-red-600 px-8 font-semibold text-white hover:bg-red-700">Add to Cart</button>
+              <button
+                onClick={() => addItem(product, quantity)}
+                disabled={product.stock <= 0}
+                className="h-11 rounded-full bg-red-600 px-8 font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Add to Cart
+              </button>
             </div>
             <div className="mt-8 grid gap-3 border-t border-zinc-100 pt-5 sm:grid-cols-3">
               {[
@@ -53,12 +154,14 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        <section>
-          <h2 className="section-title mb-5">You may also like</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {recommended.map((item) => <ProductCard key={item.id} product={item} />)}
-          </div>
-        </section>
+        {recommended.length > 0 && (
+          <section>
+            <h2 className="section-title mb-5">You may also like</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {recommended.map((item) => <ProductCard key={item.id} product={item} />)}
+            </div>
+          </section>
+        )}
       </div>
     </PageTransition>
   )

@@ -13,6 +13,7 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import ProductsPage from './pages/ProductsPage'
 import OrderSuccessPage from './pages/OrderSuccessPage'
 import FavoritesPage from './pages/FavoritesPage'
+import MyOrdersPage from './pages/MyOrdersPage'
 
 export default function App() {
   const location = useLocation()
@@ -23,7 +24,7 @@ export default function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<HomePage />} />
           <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/:slug" element={<ProductDetailPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route
@@ -31,6 +32,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <ProtectedRoute>
+                <MyOrdersPage />
               </ProtectedRoute>
             }
           />

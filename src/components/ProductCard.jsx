@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Check, Heart, Plus } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { money } from '../data'
 import { useCartStore } from '../store/cartStore'
 import ProductArt from './ProductArt'
 
 export default function ProductCard({ product }) {
+  const navigate = useNavigate()
   const addItem = useCartStore((state) => state.addItem)
 
   const [added, setAdded] = useState(false)
@@ -52,13 +53,20 @@ export default function ProductCard({ product }) {
   }
 
   return (
-    <motion.article whileHover={{ y: -4 }} className="surface group relative p-3">
+    <motion.article
+      whileHover={{ y: -4 }}
+      onClick={() => navigate(`/products/${product.id}`)}
+      className="surface group relative cursor-pointer p-3"
+    >
       <div className="relative">
         <ProductArt product={product} />
 
         <button
           type="button"
-          onClick={handleFavorite}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleFavorite()
+          }}
           className={`absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full shadow-sm transition ${
             favorite
               ? 'bg-red-600 text-white'
@@ -93,19 +101,22 @@ export default function ProductCard({ product }) {
         </AnimatePresence>
       </div>
 
-      <Link to={`/products/${product.slug || product.id}`} className="mt-4 block">
+      <div className="mt-4 block">
         <h3 className="font-semibold text-zinc-950">{product.name}</h3>
         <p className="mt-1 text-xs text-zinc-500">
           {product.size || product.description || 'Available now'}
         </p>
-      </Link>
+      </div>
 
       <div className="mt-4 flex items-center justify-between">
         <span className="font-bold">{money(product.price)}</span>
 
         <button
           type="button"
-          onClick={handleAddToCart}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleAddToCart()
+          }}
           className={`grid h-9 w-9 place-items-center rounded-full text-white transition hover:scale-105 ${
             added ? 'bg-green-600' : 'bg-red-600 hover:bg-red-700'
           }`}
