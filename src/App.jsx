@@ -2,9 +2,11 @@ import { AnimatePresence } from 'framer-motion'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminRoute from './components/AdminRoute'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminProductsPage from './pages/AdminProductsPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
+import AdminCategoriesPage from './pages/AdminCategoriesPage'
 import AuthPage from './pages/AuthPage'
 import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
@@ -44,9 +46,38 @@ export default function App() {
             }
           />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/products" element={<AdminProductsPage />} />
-          <Route path="/admin/orders" element={<AdminOrdersPage />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <AdminRoute>
+                <AdminProductsPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute>
+                <AdminOrdersPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <AdminRoute>
+                <AdminCategoriesPage />
+              </AdminRoute>
+            }
+          />
           <Route path="/order-success" element={<OrderSuccessPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

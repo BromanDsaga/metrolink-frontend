@@ -23,7 +23,9 @@ export default function AdminDashboard() {
 
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0)
   const pendingOrders = orders.filter(o => o.status === 'PENDING').length
-  const lowStockProducts = products.filter(p => p.stock <= 10)
+  const lowStockProducts = products
+    .filter(p => p.stock <= 15)
+    .sort((a, b) => a.stock - b.stock)
 
   const stats = [
     { label: 'Total Revenue', value: money(totalRevenue), icon: '💰' },
@@ -47,6 +49,12 @@ export default function AdminDashboard() {
               className="rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 transition"
             >
               Manage Products
+            </Link>
+            <Link
+              to="/admin/categories"
+              className="rounded-full border border-zinc-200 px-5 py-2 text-sm font-semibold text-zinc-700 hover:border-red-200 hover:text-red-600 transition"
+            >
+              Manage Categories
             </Link>
             <Link
               to="/admin/orders"
@@ -131,12 +139,47 @@ export default function AdminDashboard() {
                 {lowStockProducts.map(product => (
                   <div
                     key={product.id}
-                    className="flex items-center justify-between rounded-2xl bg-zinc-50 p-4 text-sm"
+                    className="flex flex-wrap items-center gap-3 rounded-2xl bg-zinc-50 p-3 text-sm"
                   >
-                    <span className="font-medium truncate mr-2">{product.name}</span>
-                    <span className="font-bold text-red-600 shrink-0">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="h-12 w-12 shrink-0 rounded-xl bg-zinc-100 object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            'https://images.unsplash.com/photo-1542838132-92c53300491e'
+                        }}
+                      />
+                    ) : (
+                      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-zinc-100 text-xs font-semibold text-zinc-400">
+                        {product.name?.[0] || '?'}
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{product.name}</p>
+                      <p className="truncate text-xs text-zinc-400">
+                        {product.category?.name || 'Uncategorized'}
+                      </p>
+                    </div>
+
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
+                        product.stock <= 5
+                          ? 'bg-red-50 text-red-600'
+                          : 'bg-orange-50 text-orange-500'
+                      }`}
+                    >
                       {product.stock} left
                     </span>
+
+                    <Link
+                      to="/admin/products"
+                      className="shrink-0 rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:border-red-200 hover:text-red-600"
+                    >
+                      Restock
+                    </Link>
                   </div>
                 ))}
               </div>
