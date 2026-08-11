@@ -1,6 +1,7 @@
 import { Minus, Plus, RotateCcw, ShieldCheck, Truck } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import PageTransition from '../components/PageTransition'
 import ProductArt from '../components/ProductArt'
 import ProductCard from '../components/ProductCard'
@@ -155,12 +156,32 @@ export default function ProductDetailPage() {
         </div>
 
         {recommended.length > 0 && (
-          <section>
-            <h2 className="section-title mb-5">You may also like</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {recommended.map((item) => <ProductCard key={item.id} product={item} />)}
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <h2 className="section-title">You may also like</h2>
+
+              {product.category?.name && (
+                <Link
+                  to={`/products?category=${encodeURIComponent(product.category.name)}`}
+                  className="shrink-0 text-sm font-semibold text-red-600 hover:underline"
+                >
+                  View all in {product.category.name} &rarr;
+                </Link>
+              )}
             </div>
-          </section>
+
+            <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:pb-0 lg:grid-cols-4">
+              {recommended.map((item) => (
+                <div key={item.id} className="w-[68%] shrink-0 sm:w-auto">
+                  <ProductCard product={item} />
+                </div>
+              ))}
+            </div>
+          </motion.section>
         )}
       </div>
     </PageTransition>
