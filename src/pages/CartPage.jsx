@@ -7,8 +7,8 @@ import { useCartStore } from '../store/cartStore'
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, clearCart, subtotal } = useCartStore()
-  const delivery = items.length ? 1500 : 0
-  const total = subtotal() + delivery
+  const serviceFee = items.length ? 500 : 0
+  const total = subtotal() + serviceFee
 
   return (
     <PageTransition>
@@ -43,7 +43,8 @@ export default function CartPage() {
           <h2 className="text-xl font-bold">Order Summary</h2>
           <div className="mt-5 space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-zinc-500">Subtotal</span><span>{money(subtotal())}</span></div>
-            <div className="flex justify-between"><span className="text-zinc-500">Delivery</span><span>{money(delivery)}</span></div>
+            <div className="flex justify-between"><span className="text-zinc-500">Service Fee</span><span>{money(serviceFee)}</span></div>
+            <p className="text-xs text-zinc-400">Service fee covers order processing</p>
             <div className="flex justify-between border-t border-zinc-100 pt-3 text-base font-bold"><span>Total</span><span className="text-red-600">{money(total)}</span></div>
           </div>
           <Link to="/checkout" className="mt-6 block rounded-full bg-red-600 px-5 py-3 text-center font-semibold text-white">Proceed to Checkout</Link>

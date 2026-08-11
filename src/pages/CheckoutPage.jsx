@@ -8,6 +8,7 @@ const money = (amount) => `₦${Number(amount).toLocaleString()}`
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCartStore()
+  const serviceFee = items.length ? 500 : 0
   const navigate = useNavigate()
 
   const [form, setForm] = useState({
@@ -68,7 +69,7 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           price: item.price,
         })),
-        total: subtotal(),
+        total: subtotal() + serviceFee,
         paymentMethod,
       }
 
@@ -191,9 +192,14 @@ export default function CheckoutPage() {
               <span>{money(subtotal())}</span>
             </div>
 
+            <div className="flex justify-between">
+              <span>Service Fee</span>
+              <span>{money(serviceFee)}</span>
+            </div>
+
             <div className="flex justify-between text-base font-bold">
               <span>Total</span>
-              <span className="text-red-600">{money(subtotal())}</span>
+              <span className="text-red-600">{money(subtotal() + serviceFee)}</span>
             </div>
           </div>
 

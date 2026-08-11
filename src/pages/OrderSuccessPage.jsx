@@ -125,9 +125,14 @@ const buildInvoicePdf = (order, email) => {
     (sum, item) => sum + item.price * item.quantity,
     0
   )
+  const serviceFee = order.total - itemsSubtotal
 
   doc.text('Subtotal', col.unit, y)
   doc.text(pdfMoney(itemsSubtotal), col.subtotal, y, { align: 'right' })
+  y += 7
+
+  doc.text('Service Fee', col.unit, y)
+  doc.text(pdfMoney(serviceFee), col.subtotal, y, { align: 'right' })
   y += 9
 
   doc.setFont('helvetica', 'bold')
