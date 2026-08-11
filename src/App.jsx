@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
@@ -16,6 +16,7 @@ import ProductsPage from './pages/ProductsPage'
 import OrderSuccessPage from './pages/OrderSuccessPage'
 import FavoritesPage from './pages/FavoritesPage'
 import MyOrdersPage from './pages/MyOrdersPage'
+import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
   const location = useLocation()
@@ -79,7 +80,7 @@ export default function App() {
             }
           />
           <Route path="/order-success" element={<OrderSuccessPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AnimatePresence>
     </Layout>
