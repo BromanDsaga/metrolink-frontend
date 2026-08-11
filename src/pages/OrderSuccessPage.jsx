@@ -1,9 +1,16 @@
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { MessageCircle } from 'lucide-react'
+import { Download, MessageCircle } from 'lucide-react'
+import jsPDF from 'jspdf'
 import PageTransition from '../components/PageTransition'
+import { useAuthStore } from '../store/authStore'
 
 const money = (amount) => `₦${Number(amount).toLocaleString()}`
+
+// jsPDF's built-in fonts don't include the Naira glyph, so the PDF uses
+// "NGN" instead of "₦" (the on-screen UI keeps "₦" via money() above).
+const pdfMoney = (amount) => `NGN ${Number(amount).toLocaleString()}`
 
 const WHATSAPP_NUMBER = '2348012345678'
 
@@ -23,13 +30,150 @@ const buildWhatsAppMessage = (order) => {
   return lines.join('\n')
 }
 
+const generateInvoiceNumber = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase()
+  }
+
+  return Date.now().toString(36).slice(0, 8).toUpperCase()
+}
+
+const buildInvoicePdf = (order, email) => {
+  const doc = new jsPDF()
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  const marginX = 14
+  let y = 22
+
+  // Header — Metrolink "logo"
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(22)
+  doc.setTextColor(220, 38, 38)
+  doc.text('Metrolink', marginX, y)
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.setTextColor(140, 140, 140)
+  doc.text('Everyday Essentials', marginX, y + 6)
+
+  doc.setTextColor(0, 0, 0)
+  y += 16
+  doc.setDrawColor(230, 230, 230)
+  doc.line(marginX, y, pageWidth - marginX, y)
+  y += 10
+
+  // Invoice meta
+  const invoiceNumber = generateInvoiceNumber()
+  const orderDate = new Date().toLocaleDateString('en-NG', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(14)
+  doc.text('Invoice', marginX, y)
+  y += 8
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(10)
+  doc.text(`Invoice #: ${invoiceNumber}`, marginX, y)
+  doc.text(`Date: ${orderDate}`, pageWidth - marginX, y, { align: 'right' })
+  y += 6
+  doc.text(`Customer: ${email || 'Guest'}`, marginX, y)
+  y += 12
+
+  // Table
+  const col = {
+    name: marginX,
+    qty: marginX + 92,
+    unit: marginX + 116,
+    subtotal: pageWidth - marginX,
+  }
+
+  doc.setFont('helvetica', 'bold')
+  doc.text('Product', col.name, y)
+  doc.text('Qty', col.qty, y)
+  doc.text('Unit Price', col.unit, y)
+  doc.text('Subtotal', col.subtotal, y, { align: 'right' })
+  y += 3
+  doc.setDrawColor(0, 0, 0)
+  doc.line(marginX, y, pageWidth - marginX, y)
+  y += 7
+
+  doc.setFont('helvetica', 'normal')
+  order.items.forEach((item) => {
+    const lineTotal = item.price * item.quantity
+    doc.text(String(item.name), col.name, y, { maxWidth: col.qty - col.name - 4 })
+    doc.text(String(item.quantity), col.qty, y)
+    doc.text(pdfMoney(item.price), col.unit, y)
+    doc.text(pdfMoney(lineTotal), col.subtotal, y, { align: 'right' })
+    y += 8
+  })
+
+  y += 2
+  doc.setDrawColor(230, 230, 230)
+  doc.line(marginX, y, pageWidth - marginX, y)
+  y += 10
+
+  const itemsSubtotal = order.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  )
+  const deliveryFee = order.total - itemsSubtotal
+
+  doc.text('Subtotal', col.unit, y)
+  doc.text(pdfMoney(itemsSubtotal), col.subtotal, y, { align: 'right' })
+  y += 7
+
+  doc.text('Delivery Fee', col.unit, y)
+  doc.text(pdfMoney(deliveryFee), col.subtotal, y, { align: 'right' })
+  y += 9
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.setTextColor(220, 38, 38)
+  doc.text('Total', col.unit, y)
+  doc.text(pdfMoney(order.total), col.subtotal, y, { align: 'right' })
+  doc.setTextColor(0, 0, 0)
+
+  // Footer
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(140, 140, 140)
+  doc.text(
+    'Thank you for shopping with Metrolink. For inquiries contact us on WhatsApp: 08012345678',
+    marginX,
+    pageHeight - 18,
+    { maxWidth: pageWidth - marginX * 2 }
+  )
+
+  doc.save(`Metrolink-Invoice-${invoiceNumber}.pdf`)
+}
+
 export default function OrderSuccessPage() {
   const location = useLocation()
   const order = location.state
+  const user = useAuthStore((state) => state.user)
+
+  const [downloading, setDownloading] = useState(false)
 
   const whatsappUrl = order
     ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(order))}`
     : null
+
+  const handleDownloadInvoice = () => {
+    if (!order || downloading) return
+
+    setDownloading(true)
+
+    // Brief delay so "Downloading..." is visible — PDF generation itself
+    // is near-instant for a document this size.
+    setTimeout(() => {
+      buildInvoicePdf(order, user?.email)
+      setDownloading(false)
+    }, 500)
+  }
 
   return (
     <PageTransition>
@@ -105,6 +249,20 @@ export default function OrderSuccessPage() {
                 <MessageCircle size={18} />
                 Share order on WhatsApp
               </motion.a>
+            )}
+
+            {order && (
+              <motion.button
+                type="button"
+                onClick={handleDownloadInvoice}
+                disabled={downloading}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center justify-center gap-2 rounded-full border border-red-200 px-8 py-3 font-bold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Download size={18} />
+                {downloading ? 'Downloading...' : 'Download Invoice'}
+              </motion.button>
             )}
           </div>
         </motion.div>

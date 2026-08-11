@@ -12,6 +12,7 @@
     "@vitejs/plugin-react": "latest",
     "axios": "latest",
     "framer-motion": "latest",
+    "jspdf": "^4.2.1",
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
