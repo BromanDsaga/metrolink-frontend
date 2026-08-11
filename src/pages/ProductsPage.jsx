@@ -1,15 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { X } from 'lucide-react'
 import PageTransition from '../components/PageTransition'
 import ProductCard from '../components/ProductCard'
 import SkeletonCard from '../components/SkeletonCard'
 import api from '../api/client'
 
+const SEARCH_DEBOUNCE_MS = 500
+
 export default function ProductsPage() {
 
   const [searchParams] = useSearchParams()
 
+  // searchInput tracks every keystroke immediately (for a responsive input).
+  // query is the debounced value that actually drives the API fetch.
+  const [searchInput, setSearchInput] = useState(searchParams.get('query') || '')
   const [query, setQuery] = useState(searchParams.get('query') || '')
+  const debounceRef = useRef(null)
+
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [categoriesLoaded, setCategoriesLoaded] = useState(false)
@@ -132,23 +140,57 @@ export default function ProductsPage() {
 
   }, [query, activeCategory, page, categoriesLoaded, searchParams])
 
-  // Sync search query from URL
+  // Sync search query from URL (e.g. the navbar search navigating here).
+  // Only acts when the URL actually carries a ?query= that differs from
+  // what's currently in the box, so unrelated searchParams changes (like
+  // clicking a category pill) never clobber text the user is typing.
   useEffect(() => {
 
     const urlQuery = searchParams.get('query')
 
-    if (urlQuery) {
+    if (urlQuery && urlQuery !== searchInput) {
+      clearTimeout(debounceRef.current)
+      setSearchInput(urlQuery)
       setQuery(urlQuery)
-    }
-
-  }, [searchParams])
-
-  const handleSearch = (e) => {
-
-    if (e.key === 'Enter') {
       setPage(0)
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  // Debounce: 500ms after the user stops typing, commit searchInput to
+  // query, which triggers the products fetch above.
+  useEffect(() => {
+
+    debounceRef.current = setTimeout(() => {
+      setQuery(searchInput)
+      setPage(0)
+    }, SEARCH_DEBOUNCE_MS)
+
+    return () => clearTimeout(debounceRef.current)
+
+  }, [searchInput])
+
+  // Bypasses the debounce for an immediate search (Enter key / Search button)
+  const commitSearch = () => {
+    clearTimeout(debounceRef.current)
+    setQuery(searchInput)
+    setPage(0)
+  }
+
+  const handleSearchKeyDown = (e) => {
+
+    if (e.key === 'Enter') {
+      commitSearch()
+    }
+
+  }
+
+  const clearSearch = () => {
+    clearTimeout(debounceRef.current)
+    setSearchInput('')
+    setQuery('')
+    setPage(0)
   }
 
   return (
@@ -172,18 +214,31 @@ export default function ProductsPage() {
         {/* Search */}
         <div className="surface mb-5 flex flex-col gap-3 p-3 md:flex-row">
 
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleSearch}
-            placeholder="Search products..."
-            className="h-12 flex-1 rounded-full border border-zinc-200 px-5 outline-none focus:border-red-300"
-          />
+          <div className="relative flex-1">
+
+            <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Search products..."
+              className="h-12 w-full rounded-full border border-zinc-200 px-5 pr-11 outline-none focus:border-red-300"
+            />
+
+            {searchInput && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
+              >
+                <X size={15} />
+              </button>
+            )}
+
+          </div>
 
           <button
-            onClick={() => {
-              setPage(0)
-            }}
+            onClick={commitSearch}
             className="h-12 rounded-full bg-red-600 px-6 text-sm font-semibold text-white transition hover:bg-red-700"
           >
             Search
@@ -231,7 +286,13 @@ export default function ProductsPage() {
 
         {/* Results Count */}
         <p className="mb-4 text-sm text-zinc-500">
-          Showing {products.length} of {totalElements} products
+          {query ? (
+            <>
+              {totalElements} result{totalElements === 1 ? '' : 's'} for &ldquo;{query}&rdquo;
+            </>
+          ) : (
+            <>Showing {products.length} of {totalElements} products</>
+          )}
         </p>
 
         {/* Products Grid */}
