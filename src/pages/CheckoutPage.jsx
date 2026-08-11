@@ -63,8 +63,17 @@ export default function CheckoutPage() {
 
       await api.post('/orders', orderItems)
 
+      const orderDetails = {
+        items: items.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        total: subtotal() + delivery,
+      }
+
       clearCart()
-      navigate('/order-success')
+      navigate('/order-success', { state: orderDetails })
     } catch (err) {
       setError('Failed to place order. Please try again.')
     } finally {
