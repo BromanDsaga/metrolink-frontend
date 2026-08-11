@@ -8,7 +8,6 @@ const money = (amount) => `₦${Number(amount).toLocaleString()}`
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCartStore()
-  const delivery = items.length ? 1500 : 0
   const navigate = useNavigate()
 
   const [form, setForm] = useState({
@@ -21,7 +20,7 @@ export default function CheckoutPage() {
     postalCode: '',
   })
 
-  const [paymentMethod, setPaymentMethod] = useState('delivery')
+  const [paymentMethod, setPaymentMethod] = useState('ON_PICKUP')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -30,8 +29,8 @@ export default function CheckoutPage() {
   }
 
   const handlePlaceOrder = async () => {
-    if (paymentMethod === 'card') {
-      setError('Card payment is not available yet. Please choose Pay on Delivery.')
+    if (paymentMethod === 'ONLINE') {
+      setError('Online payment is coming soon. Please choose Pay on Pickup.')
       return
     }
 
@@ -61,7 +60,7 @@ export default function CheckoutPage() {
         quantity: item.quantity,
       }))
 
-      await api.post('/orders', orderItems)
+      await api.post('/orders', { items: orderItems, paymentMethod })
 
       const orderDetails = {
         items: items.map((item) => ({
@@ -69,7 +68,8 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           price: item.price,
         })),
-        total: subtotal() + delivery,
+        total: subtotal(),
+        paymentMethod,
       }
 
       clearCart()
@@ -117,16 +117,11 @@ export default function CheckoutPage() {
           </div>
 
           <div className="mt-6">
-            <h2 className="font-bold">Delivery Options</h2>
+            <h2 className="font-bold">Pickup Information</h2>
 
-            <label className="mt-3 flex items-center justify-between rounded-2xl border border-red-200 bg-red-50 p-4">
-              <span>
-                <span className="block font-semibold">Standard Delivery</span>
-                <span className="text-sm text-zinc-500">24–48 hours</span>
-              </span>
-
-              <span className="font-semibold">{money(1500)}</span>
-            </label>
+            <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+              Come pick up your order at our store. No delivery fee.
+            </div>
           </div>
 
           <div className="mt-6">
@@ -136,37 +131,40 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setPaymentMethod('delivery')
+                  setPaymentMethod('ON_PICKUP')
 
-                  if (error === 'Card payment is not available yet. Please choose Pay on Delivery.') {
+                  if (error === 'Online payment is coming soon. Please choose Pay on Pickup.') {
                     setError('')
                   }
                 }}
                 className={`rounded-2xl border p-4 text-left font-semibold transition ${
-                  paymentMethod === 'delivery'
+                  paymentMethod === 'ON_PICKUP'
                     ? 'border-red-400 bg-red-50 text-red-700'
                     : 'border-zinc-200 hover:border-red-200'
                 }`}
               >
-                💵 Pay on Delivery
+                💵 Pay on Pickup
               </button>
 
               <button
                 type="button"
-                onClick={() => setPaymentMethod('card')}
+                onClick={() => setPaymentMethod('ONLINE')}
                 className={`rounded-2xl border p-4 text-left font-semibold transition ${
-                  paymentMethod === 'card'
+                  paymentMethod === 'ONLINE'
                     ? 'border-red-400 bg-red-50 text-red-700'
                     : 'border-zinc-200 hover:border-red-200'
                 }`}
               >
-                💳 Pay with Card
+                💳 Pay Online
+                <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600">
+                  Coming soon
+                </span>
               </button>
             </div>
 
-            {paymentMethod === 'card' && (
+            {paymentMethod === 'ONLINE' && (
               <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
-                Card payment is not available yet. Please choose Pay on Delivery.
+                Online payment is coming soon. Please choose Pay on Pickup.
               </div>
             )}
           </div>
@@ -193,14 +191,9 @@ export default function CheckoutPage() {
               <span>{money(subtotal())}</span>
             </div>
 
-            <div className="flex justify-between">
-              <span>Delivery</span>
-              <span>{money(delivery)}</span>
-            </div>
-
             <div className="flex justify-between text-base font-bold">
               <span>Total</span>
-              <span className="text-red-600">{money(subtotal() + delivery)}</span>
+              <span className="text-red-600">{money(subtotal())}</span>
             </div>
           </div>
 

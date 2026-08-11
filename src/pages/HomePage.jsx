@@ -12,6 +12,7 @@ import api from '../api/client'
 
 import PageTransition from '../components/PageTransition'
 import ProductCard from '../components/ProductCard'
+import SkeletonCard from '../components/SkeletonCard'
 import { Link } from 'react-router-dom'
 import SectionHeader from '../components/SectionHeader'
 
@@ -25,6 +26,7 @@ const perks = [
 export default function HomePage() {
 
   const [featuredProducts, setFeaturedProducts] = useState([])
+  const [loadingProducts, setLoadingProducts] = useState(true)
 
   useEffect(() => {
 
@@ -39,6 +41,10 @@ export default function HomePage() {
       } catch (error) {
 
         console.error('Failed to fetch products', error)
+
+      } finally {
+
+        setLoadingProducts(false)
 
       }
 
@@ -202,14 +208,24 @@ export default function HomePage() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-            {featuredProducts.slice(0, 4).map((product) => (
+            {loadingProducts ? (
 
-              <ProductCard
-                key={product.id}
-                product={product}
-              />
+              Array.from({ length: 4 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))
 
-            ))}
+            ) : (
+
+              featuredProducts.slice(0, 4).map((product) => (
+
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                />
+
+              ))
+
+            )}
 
           </div>
 

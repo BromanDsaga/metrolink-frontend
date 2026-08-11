@@ -62,10 +62,20 @@ export default function MyOrdersPage() {
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="surface animate-pulse p-5">
-                <div className="h-4 w-1/3 rounded bg-zinc-100" />
-                <div className="mt-3 h-3 w-1/4 rounded bg-zinc-100" />
-                <div className="mt-6 h-3 w-full rounded bg-zinc-100" />
-                <div className="mt-2 h-3 w-2/3 rounded bg-zinc-100" />
+                <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-4">
+                  <div>
+                    <div className="h-3 w-24 rounded bg-zinc-100" />
+                    <div className="mt-2 h-3 w-16 rounded bg-zinc-100" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-5 w-20 rounded-full bg-zinc-100" />
+                    <div className="h-4 w-14 rounded bg-zinc-100" />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <div className="h-3 w-full rounded bg-zinc-100" />
+                  <div className="h-3 w-2/3 rounded bg-zinc-100" />
+                </div>
               </div>
             ))}
           </div>

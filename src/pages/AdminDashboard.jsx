@@ -73,7 +73,10 @@ export default function AdminDashboard() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map(({ label, value, icon }) => (
-            <div key={label} className="surface p-5 rounded-2xl border border-zinc-100">
+            <div
+              key={label}
+              className={`surface p-5 rounded-2xl border border-zinc-100 ${loading ? 'animate-pulse' : ''}`}
+            >
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm text-zinc-500">{label}</p>
                 <span className="text-2xl">{icon}</span>

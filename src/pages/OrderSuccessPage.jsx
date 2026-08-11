@@ -14,6 +14,9 @@ const pdfMoney = (amount) => `NGN ${Number(amount).toLocaleString()}`
 
 const WHATSAPP_NUMBER = '2348012345678'
 
+const paymentMethodLabel = (method) =>
+  method === 'ONLINE' ? 'Paid Online' : 'Pay on Pickup'
+
 const buildWhatsAppMessage = (order) => {
   const lines = [
     'Hello Metrolink! I just placed an order:',
@@ -81,6 +84,8 @@ const buildInvoicePdf = (order, email) => {
   doc.text(`Date: ${orderDate}`, pageWidth - marginX, y, { align: 'right' })
   y += 6
   doc.text(`Customer: ${email || 'Guest'}`, marginX, y)
+  y += 6
+  doc.text(`Payment: ${paymentMethodLabel(order.paymentMethod)}`, marginX, y)
   y += 12
 
   // Table
@@ -120,14 +125,9 @@ const buildInvoicePdf = (order, email) => {
     (sum, item) => sum + item.price * item.quantity,
     0
   )
-  const deliveryFee = order.total - itemsSubtotal
 
   doc.text('Subtotal', col.unit, y)
   doc.text(pdfMoney(itemsSubtotal), col.subtotal, y, { align: 'right' })
-  y += 7
-
-  doc.text('Delivery Fee', col.unit, y)
-  doc.text(pdfMoney(deliveryFee), col.subtotal, y, { align: 'right' })
   y += 9
 
   doc.setFont('helvetica', 'bold')
@@ -196,7 +196,7 @@ export default function OrderSuccessPage() {
           <h1 className="mb-3 text-3xl font-black text-gray-900">Order Placed!</h1>
 
           <p className="mb-8 text-zinc-500">
-            Thank you for shopping with Metrolink. Your order has been received and will be delivered in 24–48 hours.
+            Thank you for shopping with Metrolink. Ready for pickup at our store.
           </p>
 
           {order && (
@@ -223,6 +223,10 @@ export default function OrderSuccessPage() {
                 <span>Total</span>
                 <span className="text-red-600">{money(order.total)}</span>
               </div>
+
+              <p className="mt-2 text-xs text-zinc-500">
+                Payment: {paymentMethodLabel(order.paymentMethod)}
+              </p>
             </div>
           )}
 

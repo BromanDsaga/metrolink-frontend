@@ -75,10 +75,32 @@ export default function ProductDetailPage() {
         <div className="container-shell">
           <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="surface h-80 animate-pulse" />
+
             <div className="surface animate-pulse p-6">
-              <div className="h-4 w-1/3 rounded bg-zinc-100" />
-              <div className="mt-4 h-8 w-2/3 rounded bg-zinc-100" />
-              <div className="mt-6 h-6 w-1/4 rounded bg-zinc-100" />
+              <div className="h-3 w-24 rounded bg-zinc-100" />
+              <div className="mt-5 h-8 w-3/4 rounded bg-zinc-100" />
+              <div className="mt-3 h-3 w-1/3 rounded bg-zinc-100" />
+              <div className="mt-5 h-8 w-1/3 rounded bg-zinc-100" />
+              <div className="mt-5 space-y-2">
+                <div className="h-3 w-full rounded bg-zinc-100" />
+                <div className="h-3 w-5/6 rounded bg-zinc-100" />
+              </div>
+              <div className="mt-4 h-3 w-20 rounded bg-zinc-100" />
+              <div className="mt-6 flex items-center gap-3">
+                <div className="h-11 w-28 rounded-full bg-zinc-100" />
+                <div className="h-11 w-36 rounded-full bg-zinc-100" />
+              </div>
+              <div className="mt-8 grid gap-3 border-t border-zinc-100 pt-5 sm:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="h-9 w-9 shrink-0 rounded-full bg-zinc-100" />
+                    <div className="w-full">
+                      <div className="h-3 w-4/5 rounded bg-zinc-100" />
+                      <div className="mt-2 h-2.5 w-3/5 rounded bg-zinc-100" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
