@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Camera, Image as ImageIcon } from 'lucide-react'
 import PageTransition from '../components/PageTransition'
 import api from '../api/client'
 
@@ -13,6 +14,9 @@ export default function AdminProductsPage() {
   })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
+  const cameraInputRef = useRef(null)
 
   const fetchProducts = () => {
     api.get('/products', { params: { size: 100 } })
@@ -73,6 +77,33 @@ export default function AdminProductsPage() {
       setError('Failed to save product.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file.')
+      return
+    }
+
+    setForm(prev => ({ ...prev, imageUrl: URL.createObjectURL(file) }))
+    setError('')
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const response = await api.post('/upload/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setForm(prev => ({ ...prev, imageUrl: response.data.url }))
+    } catch {
+      setError('Failed to upload image.')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -189,7 +220,6 @@ export default function AdminProductsPage() {
                 { label: 'Product Name', key: 'name', type: 'text' },
                 { label: 'Price (₦)', key: 'price', type: 'number' },
                 { label: 'Stock', key: 'stock', type: 'number' },
-                { label: 'Image URL', key: 'imageUrl', type: 'text' },
               ].map(({ label, key, type }) => (
                 <label key={key} className="block">
                   <span className="mb-1 block text-sm font-medium">{label}</span>
@@ -201,6 +231,68 @@ export default function AdminProductsPage() {
                   />
                 </label>
               ))}
+
+              <div className="block">
+                <span className="mb-1 block text-sm font-medium">Product Image</span>
+                <div className="flex items-center gap-3">
+                  {form.imageUrl && (
+                    <img
+                      src={form.imageUrl}
+                      alt="Preview"
+                      className="h-20 w-20 rounded-xl border border-zinc-200 bg-zinc-100 object-cover"
+                    />
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => cameraInputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex items-center gap-1.5 rounded-full border border-red-600 px-4 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                      >
+                        <Camera className="h-3.5 w-3.5" />
+                        Camera
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex items-center gap-1.5 rounded-full border border-zinc-300 px-4 py-1.5 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 disabled:opacity-50"
+                      >
+                        <ImageIcon className="h-3.5 w-3.5" />
+                        Choose Image
+                      </button>
+                    </div>
+                    {uploading && (
+                      <span className="text-xs font-medium text-zinc-500">Uploading...</span>
+                    )}
+                  </div>
+                </div>
+
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+
+                <input
+                  type="text"
+                  value={form.imageUrl}
+                  onChange={e => setForm(prev => ({ ...prev, imageUrl: e.target.value }))}
+                  placeholder="Or paste an image URL"
+                  className="mt-2 h-11 w-full rounded-xl border border-zinc-200 px-4 text-sm outline-none focus:border-red-300"
+                />
+              </div>
 
               <label className="block">
                 <span className="mb-1 block text-sm font-medium">Category</span>
@@ -236,7 +328,7 @@ export default function AdminProductsPage() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={saving}
+                disabled={saving || uploading}
                 className="flex-1 rounded-full bg-red-600 py-3 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Product'}
