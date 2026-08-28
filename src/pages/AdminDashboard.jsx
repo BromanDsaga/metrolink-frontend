@@ -38,27 +38,27 @@ export default function AdminDashboard() {
     <PageTransition>
       <div className="container-shell space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-black">Admin Dashboard</h1>
             <p className="text-zinc-500 mt-1 text-sm">Store overview</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               to="/admin/products"
-              className="rounded-full bg-red-600 px-5 py-2 text-sm font-semibold text-white hover:bg-red-700 transition"
+              className="w-full rounded-full bg-red-600 px-4 py-2 text-center text-xs font-semibold text-white transition hover:bg-red-700 sm:w-auto sm:px-5 sm:text-sm"
             >
               Manage Products
             </Link>
             <Link
               to="/admin/categories"
-              className="rounded-full border border-zinc-200 px-5 py-2 text-sm font-semibold text-zinc-700 hover:border-red-200 hover:text-red-600 transition"
+              className="w-full rounded-full border border-zinc-200 px-4 py-2 text-center text-xs font-semibold text-zinc-700 transition hover:border-red-200 hover:text-red-600 sm:w-auto sm:px-5 sm:text-sm"
             >
               Manage Categories
             </Link>
             <Link
               to="/admin/orders"
-              className="relative rounded-full border border-zinc-200 px-5 py-2 text-sm font-semibold text-zinc-700 hover:border-red-200 hover:text-red-600 transition"
+              className="relative w-full rounded-full border border-zinc-200 px-4 py-2 text-center text-xs font-semibold text-zinc-700 transition hover:border-red-200 hover:text-red-600 sm:w-auto sm:px-5 sm:text-sm"
             >
               View Orders
               {!loading && pendingOrders > 0 && (
@@ -71,24 +71,24 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
           {stats.map(({ label, value, icon }) => (
             <div
               key={label}
-              className={`surface p-5 rounded-2xl border border-zinc-100 ${loading ? 'animate-pulse' : ''}`}
+              className={`surface rounded-2xl border border-zinc-100 p-4 sm:p-5 ${loading ? 'animate-pulse' : ''}`}
             >
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm text-zinc-500">{label}</p>
-                <span className="text-2xl">{icon}</span>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs text-zinc-500 sm:text-sm">{label}</p>
+                <span className="text-xl sm:text-2xl">{icon}</span>
               </div>
-              <p className="text-2xl font-black">
+              <p className="truncate text-xl font-black sm:text-2xl">
                 {loading ? '...' : value}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           {/* Recent Orders */}
           <section className="surface p-5 rounded-2xl border border-zinc-100">
             <div className="flex items-center justify-between mb-4">
