@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageTransition from '../components/PageTransition'
 import { useCartStore } from '../store/cartStore'
+import { safeStorage } from '../store/authStore'
 import api from '../api/client'
 
 const money = (amount) => `₦${Number(amount).toLocaleString()}`
@@ -45,7 +46,7 @@ export default function CheckoutPage() {
       return
     }
 
-    const token = localStorage.getItem('token')
+    const token = safeStorage.getItem('token')
 
     if (!token) {
       navigate('/auth', { state: { from: '/checkout' } })
