@@ -257,7 +257,8 @@ export default function Layout({ children }) {
                   ['Favorites', '/favorites'],
                   ['Cart', '/cart'],
                   ...(user ? [['My Orders', '/my-orders']] : []),
-                  ['Account', '/auth'],
+                  ...(user?.role === 'ADMIN' ? [['Admin', '/admin']] : []),
+                  ...(user ? [] : [['Account', '/auth']]),
                 ].map(([label, href]) => (
                   <NavLink
                     key={label}
@@ -268,6 +269,19 @@ export default function Layout({ children }) {
                     {label}
                   </NavLink>
                 ))}
+
+                {user && (
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false)
+                      handleLogout()
+                    }}
+                    className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-sm font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600"
+                  >
+                    <LogOut size={15} />
+                    Logout ({displayName})
+                  </button>
+                )}
               </div>
             </motion.div>
           </>
@@ -284,10 +298,12 @@ export default function Layout({ children }) {
           [Grid2X2, 'Shop', '/products'],
           [Heart, 'Saved', '/favorites'],
           [ShoppingCart, 'Cart', '/cart'],
-          [UserRound, 'Account', '/auth'],
+          user
+            ? [UserRound, displayName, '/my-orders']
+            : [UserRound, 'Account', '/auth'],
         ].map(([Icon, label, href]) => (
           <NavLink
-            key={label}
+            key={href}
             to={href}
             className={({ isActive }) =>
               `flex min-w-14 flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] ${
@@ -298,7 +314,7 @@ export default function Layout({ children }) {
             }
           >
             <Icon size={17} />
-            {label}
+            <span className="max-w-[56px] truncate">{label}</span>
           </NavLink>
         ))}
       </nav>

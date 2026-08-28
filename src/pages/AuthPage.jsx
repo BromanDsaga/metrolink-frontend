@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import PageTransition from '../components/PageTransition'
 import api from '../api/client'
-import { useAuthStore, safeStorage } from '../store/authStore'
+import { useAuthStore } from '../store/authStore'
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login')
@@ -94,7 +94,7 @@ export default function AuthPage() {
 
       const { data } = await api.post(endpoint, payload)
 
-      safeStorage.setItem('token', data.token)
+      localStorage.setItem('token', data.token)
       useAuthStore.getState().setUser({
         email: data.email,
         role: data.role,
@@ -104,15 +104,18 @@ export default function AuthPage() {
 
       navigate(redirectTo)
     } catch (err) {
-      const status = err?.response?.status
+      const backendMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.response?.data
 
-      if (mode === 'register' && (status === 400 || status === 409)) {
-        setError('An account with this email already exists. Please login instead.')
-      } else if (mode === 'login' && (status === 401 || status === 400)) {
-        setError('Incorrect email or password. Please try again.')
-      } else {
-        setError('Something went wrong. Please try again later.')
-      }
+      setError(
+        typeof backendMessage === 'string'
+          ? backendMessage
+          : mode === 'login'
+          ? 'Invalid email or password.'
+          : 'Registration failed. Please check your details and try again.'
+      )
     } finally {
       setLoading(false)
     }
