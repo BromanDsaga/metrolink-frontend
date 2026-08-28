@@ -86,7 +86,7 @@ export default function Layout({ children }) {
         className="fixed inset-x-0 top-0 z-50"
       >
         <div className="bg-red-700 py-2 text-center text-xs font-medium text-white">
-          FREE delivery on orders over ₦20,000
+          FREE pickup — Order online, collect at our store
         </div>
 
         <div className="border-b border-zinc-200 bg-white/95 backdrop-blur">

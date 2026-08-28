@@ -12,7 +12,7 @@ const money = (amount) => `₦${Number(amount).toLocaleString()}`
 // "NGN" instead of "₦" (the on-screen UI keeps "₦" via money() above).
 const pdfMoney = (amount) => `NGN ${Number(amount).toLocaleString()}`
 
-const WHATSAPP_NUMBER = '2348012345678'
+const WHATSAPP_NUMBER = '2348184555262'
 
 const paymentMethodLabel = (method) =>
   method === 'ONLINE' ? 'Paid Online' : 'Pay on Pickup'
@@ -147,7 +147,7 @@ const buildInvoicePdf = (order, email) => {
   doc.setFontSize(9)
   doc.setTextColor(140, 140, 140)
   doc.text(
-    'Thank you for shopping with Metrolink. For inquiries contact us on WhatsApp: 08012345678',
+    'Thank you for shopping with Metrolink. For inquiries contact us on WhatsApp: 08184555262 / 08036860328',
     marginX,
     pageHeight - 18,
     { maxWidth: pageWidth - marginX * 2 }
