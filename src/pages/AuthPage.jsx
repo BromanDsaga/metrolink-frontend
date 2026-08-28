@@ -104,18 +104,15 @@ export default function AuthPage() {
 
       navigate(redirectTo)
     } catch (err) {
-      const backendMessage =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.response?.data
+      const status = err?.response?.status
 
-      setError(
-        typeof backendMessage === 'string'
-          ? backendMessage
-          : mode === 'login'
-          ? 'Invalid email or password.'
-          : 'Registration failed. Please check your details and try again.'
-      )
+      if (mode === 'register' && (status === 400 || status === 409)) {
+        setError('An account with this email already exists. Please login instead.')
+      } else if (mode === 'login' && (status === 401 || status === 400)) {
+        setError('Incorrect email or password. Please try again.')
+      } else {
+        setError('Something went wrong. Please try again later.')
+      }
     } finally {
       setLoading(false)
     }
