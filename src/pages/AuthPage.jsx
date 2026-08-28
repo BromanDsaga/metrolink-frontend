@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import PageTransition from '../components/PageTransition'
 import api from '../api/client'
-import { useAuthStore } from '../store/authStore'
+import { useAuthStore, safeStorage } from '../store/authStore'
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login')
@@ -94,7 +94,7 @@ export default function AuthPage() {
 
       const { data } = await api.post(endpoint, payload)
 
-      localStorage.setItem('token', data.token)
+      safeStorage.setItem('token', data.token)
       useAuthStore.getState().setUser({
         email: data.email,
         role: data.role,
