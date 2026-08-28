@@ -250,7 +250,7 @@ export default function Layout({ children }) {
                 </button>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col divide-y divide-zinc-100">
                 {[
                   ['Home', '/'],
                   ['Products', '/products'],
@@ -264,7 +264,7 @@ export default function Layout({ children }) {
                     key={label}
                     to={href}
                     onClick={() => setMobileOpen(false)}
-                    className="rounded-xl px-4 py-3 text-sm font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600"
+                    className="px-4 py-4 text-lg font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600"
                   >
                     {label}
                   </NavLink>
@@ -276,9 +276,9 @@ export default function Layout({ children }) {
                       setMobileOpen(false)
                       handleLogout()
                     }}
-                    className="flex items-center gap-2 rounded-xl px-4 py-3 text-left text-sm font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600"
+                    className="flex items-center gap-2 px-4 py-4 text-left text-lg font-medium text-zinc-700 transition hover:bg-red-50 hover:text-red-600"
                   >
-                    <LogOut size={15} />
+                    <LogOut size={17} />
                     Logout ({displayName})
                   </button>
                 )}
