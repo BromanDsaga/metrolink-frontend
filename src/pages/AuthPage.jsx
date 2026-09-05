@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import PageTransition from '../components/PageTransition'
 import api from '../api/client'
 import { useAuthStore, safeStorage } from '../store/authStore'
@@ -17,6 +18,8 @@ export default function AuthPage() {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -223,14 +226,24 @@ export default function AuthPage() {
                 <span className="mb-2 block text-sm font-medium">
                   Password
                 </span>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange('password')}
-                  onFocus={resetMessages}
-                  placeholder="••••••••"
-                  className="h-12 w-full rounded-2xl border border-zinc-200 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={handleChange('password')}
+                    onFocus={resetMessages}
+                    placeholder="••••••••"
+                    className="h-12 w-full rounded-2xl border border-zinc-200 px-4 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-zinc-400 transition hover:text-red-600"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </label>
 
               {mode === 'register' && (
@@ -238,14 +251,24 @@ export default function AuthPage() {
                   <span className="mb-2 block text-sm font-medium">
                     Confirm Password
                   </span>
-                  <input
-                    type="password"
-                    value={form.confirmPassword}
-                    onChange={handleChange('confirmPassword')}
-                    onFocus={resetMessages}
-                    placeholder="••••••••"
-                    className="h-12 w-full rounded-2xl border border-zinc-200 px-4 focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={form.confirmPassword}
+                      onChange={handleChange('confirmPassword')}
+                      onFocus={resetMessages}
+                      placeholder="••••••••"
+                      className="h-12 w-full rounded-2xl border border-zinc-200 px-4 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-3 top-1/2 z-10 -translate-y-1/2 text-zinc-400 transition hover:text-red-600"
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </label>
               )}
             </div>
